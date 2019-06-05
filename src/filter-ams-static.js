@@ -31,7 +31,7 @@ var flatten = (obj) => {
 }
 
 var main = () => {
-  var timepoints = flatten(JSON.parse(fs.readFileSync('timepoint_data.json')));
+  var timepoints = flatten(JSON.parse(fs.readFileSync('data/timepoint_data.json')));
   var amsterdamTimepoints = [];
 
   /* Filter out all timepoints that are located in Amsterdam. */
@@ -41,7 +41,7 @@ var main = () => {
     }
   })
 
-  fs.writeFileSync("amsterdam_data.json", JSON.stringify(amsterdamTimepoints));
+  fs.writeFileSync("data/amsterdam_data.json", JSON.stringify(amsterdamTimepoints));
 }
 
 main();

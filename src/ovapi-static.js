@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
 
-var keys = Object.keys(JSON.parse(fs.readFileSync('timepoint_keys.json')));
+var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')));
 
 function chunkArray(myArray, chunk_size){
   var index = 0;
@@ -31,7 +31,7 @@ var main = () => {
     fetch("https://v0.ovapi.nl/tpc/" + uri)
       .then(data => data.json())
       .catch(e => console.log(e))
-  )).then(data => fs.writeFileSync("timepoint_data.json", JSON.stringify(data)))
+  )).then(data => fs.writeFileSync("data/timepoint_data.json", JSON.stringify(data)))
 }
 
 main();
