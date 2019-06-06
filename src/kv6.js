@@ -14,11 +14,15 @@ var createObj = (obj) => {
   var retobj = obj[TYPE];
 
   return {
-    "stop_number": retobj["userstopcode"],
-    "punctuality": retobj["punctuality"],
-    "operator_name": retobj["dataownercode"],
-    "line_number": retobj["lineplanningnumber"],
-    "vehicle_number": retobj["vehiclenumber"]
+    "metrics": {
+      "punctuality": retobj["punctuality"]
+    },
+    "meta": {
+      //"stop_number": retobj["userstopcode"],
+      "operator_name": retobj["dataownercode"],
+      "line_number": retobj["lineplanningnumber"],
+      "vehicle_number": retobj["vehiclenumber"]
+    }
   }
 }
 
