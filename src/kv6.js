@@ -64,7 +64,7 @@ var parseMessage = (message) => {
 /* Generate options for post request. */
 var options = data => {
   return {
-    uri: 'http://18.216.203.6:5000',
+    uri: 'http://18.216.203.6:5000/insert-metrics',
     method: 'POST',
     json: data
   }
