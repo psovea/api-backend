@@ -26,10 +26,7 @@ dataAms.forEach(e => {
         var orderNumber = obj["UserStopOrderNumber"];
         var newP = p.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2");
         var numStops = dataLines[newP];
-<<<<<<< HEAD
         var direction = obj["LineDirection"];
-=======
->>>>>>> origin
 
         if (!glob[operatorCode]) {
             glob[operatorCode] = {}
@@ -37,10 +34,7 @@ dataAms.forEach(e => {
 
         if (!glob[operatorCode][lineCode]) {
             glob[operatorCode][lineCode] = {
-<<<<<<< HEAD
                 "direction" : direction,
-=======
->>>>>>> origin
                 "transportType" : transportType,
                 "totalStops" : numStops ? numStops : -1,
                 "stops" : []
