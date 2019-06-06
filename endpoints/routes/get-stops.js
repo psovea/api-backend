@@ -6,14 +6,14 @@
  * - Make it possible to get stops for locations other than Amsterdam (long-term)
  */
 
-var fs = require('fs');
+var fs = require('fs')
 
 var router = (app) => {
   app.get('/getStops', (req, res) => {
-    var stopData = JSON.parse(fs.readFileSync('../data/amsterdam_stops.json'));
+    var stopData = JSON.parse(fs.readFileSync('../data/amsterdam_stops.json'))
 
-    res.status(200).send(stopData);
+    res.status(200).send(stopData)
   })
 }
 
-module.exports = router;
+module.exports = router
