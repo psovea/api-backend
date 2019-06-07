@@ -15,7 +15,7 @@ const R = require('ramda')
 
 var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')));
 
-function chunkArray(myArray, chunk_size){
+var chunkArray = (myArray, chunk_size) => {
   var index = 0;
   var arrayLength = myArray.length;
   var tempArray = [];
@@ -95,6 +95,8 @@ var getRoutes = (timeStops, dataLines) => {
                 stopCode: stopCode,
                 orderNumber: orderNumber
             })
+
+            routes[operatorCode][lineCode]["stops"] = R.uniq(routes[operatorCode][lineCode]["stops"]);
         })
     })
     fs.writeFileSync("data/route_data1.json", JSON.stringify(routes))

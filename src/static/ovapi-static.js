@@ -8,7 +8,7 @@ const R = require('ramda');
 
 var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')));
 
-function chunkArray(myArray, chunk_size){
+var chunkArray = (myArray, chunk_size) => {
   var index = 0;
   var arrayLength = myArray.length;
   var tempArray = [];
