@@ -9,57 +9,52 @@
  * - create POST request to send data to database
  */
 
-const fs = require('fs');
-const fetch = require('node-fetch');
+const fs = require('fs')
+const fetch = require('node-fetch')
 const R = require('ramda')
 
-var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')));
+var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')))
 
-var chunkArray = (myArray, chunk_size) => {
-  var index = 0;
-  var arrayLength = myArray.length;
-  var tempArray = [];
-
-  for (index = 0; index < arrayLength; index += chunk_size) {
-    myChunk = myArray.slice(index, index+chunk_size);
-    tempArray.push(myChunk);
-  }
-
-  return tempArray;
-}
-
-var request = (uri) => {
-  fetch("https://v0.ovapi.nl/tpc/" + uri)
-    .then(d => {
-      return d.json();
-    })
+/* Request information about a single stop. */
+var requestStop = (uri) => {
+  return fetch("https://v0.ovapi.nl/tpc/" + uri)
+    .then(d => d.json())
     .catch(e => console.log(e))
 }
 
-var uris = chunkArray(keys, keys.length / 200).map(x => x.join(","));
+/* Splits all the id's of the stops into an array of 200 elements (the request
+ * url would be too large if we didn't) and joins them, giving us an array of
+ * uris to request.
+ * */
+var uris = keys => R.compose(
+    R.map(R.join(',')),
+    R.splitEvery(keys.length / 200)
+  )(keys)
 
-var stops = () => {
-  return Promise.all(uris.map(uri =>
-    fetch("https://v0.ovapi.nl/tpc/" + uri)
-      .then(data => data.json())
-      .catch(e => console.log(e))
-    )).then(R.compose(JSON.stringify, R.mergeAll))
+/* Get all stop information. */
+var stops = (uri) => {
+  return Promise.all(R.map(requestStop, uri))
+    .then(R.compose(JSON.stringify, R.mergeAll))
 }
 
+/* Get all stops per line. */
 var stopsPerLine = () => {
     return fetch("https://v0.ovapi.nl/journey/")
     .then(data => data.json())
-    .then(json => JSON.stringify(json).replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2"))
-
+    /* We only need the first and the third id from the key. */
+    .then(R.compose(
+      R.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2"),
+      R.toString)
+    )
 }
 
 var getRoutes = (timeStops, dataLines) => {
     var routes = {}
-    var keys = Object.keys(timeStops)
+    var keys = R.keys(timeStops)
 
     keys.forEach(k => {
         var e = timeStops[k];
-        var passes = Object.keys(e["Passes"]);
+        var passes = R.keys(e["Passes"]);
 
         passes.forEach(p => {
             var obj = e["Passes"][p];
@@ -103,12 +98,11 @@ var getRoutes = (timeStops, dataLines) => {
 }
 
 var getStops = (timeStops) => {
-    stops = [];
-
     var keys = Object.keys(timeStops)
-    keys.forEach(k => {
-      var stop = timeStops[k]
-      stops.push({
+    var stops = keys.map(key => {
+      var stop = timeStops[key]
+
+      return {
         [stop.Stop.TimingPointCode]: {
           lat: stop.Stop.Latitude,
           lon: stop.Stop.Longitude,
@@ -120,13 +114,14 @@ var getStops = (timeStops) => {
             visual: ('ACCESSIBLE') ? true : false
           }
         }
-      })
+      }
     })
+
     fs.writeFileSync('data/all_stops.json', JSON.stringify(stops));
 }
 
 var main = () => {
-    Promise.all([stopsPerLine(), stops()])
+    Promise.all([stopsPerLine(), stops(uris(keys))])
     .then(d => {
         getStops(JSON.parse(d[1]))
         getRoutes(JSON.parse(d[1]), JSON.parse(d[0]))
