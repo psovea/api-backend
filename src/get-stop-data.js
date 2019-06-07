@@ -2,13 +2,13 @@
  * NIET MEER NODIG
  */
 
-const fs = require('fs');
+const fs = require('fs')
 
 var main = () => {
   amsterdam_timestops = JSON.parse(fs.readFileSync('data/timepoint_data.json'));
   stops = [];
 
-  amsterdam_timestops.forEach(stop => {
+  amsterdamTimeStops.forEach(stop => {
     stops.push({
       [stop.Stop.TimingPointCode]: {
         lat: stop.Stop.Latitude,
@@ -17,14 +17,14 @@ var main = () => {
         town: stop.Stop.TimingPointTown,
         areaCode: stop.Stop.StopAreaCode,
         accessibility: {
-          wheelchair: ('ACCESSIBLE') ? true : false,
-          visual: ('ACCESSIBLE') ? true : false
+          wheelchair: !!('ACCESSIBLE'),
+          visual: !!('ACCESSIBLE')
         }
       }
     })
   })
 
-  fs.writeFileSync('data/amsterdam_stops.json', JSON.stringify(stops));
+  fs.writeFileSync('data/amsterdam_stops.json', JSON.stringify(stops))
 }
 
-main();
+main()
