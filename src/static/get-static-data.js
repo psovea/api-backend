@@ -13,7 +13,9 @@ const fs = require('fs')
 const fetch = require('node-fetch')
 const R = require('ramda')
 
-var keys = Object.keys(JSON.parse(fs.readFileSync('data/timepoint_keys.json')))
+var stopKeys = () => {
+  return fetch("https://v0.ovapi.nl/tpc/")
+}
 
 /* Request information about a single stop. */
 var requestStop = (uri) => {
@@ -49,52 +51,53 @@ var stopsPerLine = () => {
 }
 
 var getRoutes = (timeStops, dataLines) => {
-    var routes = {}
-    var keys = R.keys(timeStops)
+  var routes = {}
+  var keys = R.keys(timeStops)
 
-    keys.forEach(k => {
-        var e = timeStops[k];
-        var passes = R.keys(e["Passes"]);
+  keys.forEach(k => {
+    var e = timeStops[k];
+    var passes = R.keys(e["Passes"]);
 
-        passes.forEach(p => {
-            var obj = e["Passes"][p];
-            var operatorCode = obj["OperatorCode"];
-            var lineCode = obj["LinePlanningNumber"];
-            var transportType = obj["TransportType"];
-            var stopCode = obj["TimingPointCode"];
-            var orderNumber = obj["UserStopOrderNumber"];
-            var newP = p.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2");
-            var numStops = dataLines[newP];
-            var direction = obj["LineDirection"];
-            var destName = obj["DestinationName50"];
-            var lineName = obj["LineName"];
-            var publicName = obj["LinePublicNumber"];
+    passes.forEach(p => {
+      var obj = e["Passes"][p];
+      var operatorCode = obj["OperatorCode"];
+      var lineCode = obj["LinePlanningNumber"];
+      var transportType = obj["TransportType"];
+      var stopCode = obj["TimingPointCode"];
+      var orderNumber = obj["UserStopOrderNumber"];
+      var newP = p.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2");
+      var numStops = dataLines[newP];
+      var direction = obj["LineDirection"];
+      var destName = obj["DestinationName50"];
+      var lineName = obj["LineName"];
+      var publicName = obj["LinePublicNumber"];
 
-            if (!routes[operatorCode]) {
-                routes[operatorCode] = {}
-            }
+      if (!routes[operatorCode]) {
+          routes[operatorCode] = {}
+      }
 
-            if (!routes[operatorCode][lineCode]) {
-                routes[operatorCode][lineCode] = {
-                    "lineName" : lineName,
-                    "destinationName" : destName,
-                    "direction" : direction,
-                    "lineNumberName" : publicName,
-                    "transportType" : transportType,
-                    "totalStops" : numStops ? numStops : -1,
-                    "stops" : []
-                }
-            }
+      if (!routes[operatorCode][lineCode]) {
+          routes[operatorCode][lineCode] = {
+              "lineName" : lineName,
+              "destinationName" : destName,
+              "direction" : direction,
+              "lineNumberName" : publicName,
+              "transportType" : transportType,
+              "totalStops" : numStops ? numStops : -1,
+              "stops" : []
+          }
+      }
 
-            routes[operatorCode][lineCode]["stops"].push({
-                stopCode: stopCode,
-                orderNumber: orderNumber
-            })
+      routes[operatorCode][lineCode]["stops"].push({
+          stopCode: stopCode,
+          orderNumber: orderNumber
+      })
 
-            routes[operatorCode][lineCode]["stops"] = R.uniq(routes[operatorCode][lineCode]["stops"]);
-        })
+      routes[operatorCode][lineCode]["stops"] = R.uniq(routes[operatorCode][lineCode]["stops"]);
     })
-    fs.writeFileSync("data/route_data1.json", JSON.stringify(routes))
+  })
+
+  fs.writeFileSync("data/route_data1.json", JSON.stringify(routes))
 }
 
 var getStops = (timeStops) => {
@@ -121,12 +124,17 @@ var getStops = (timeStops) => {
 }
 
 var main = () => {
-    Promise.all([stopsPerLine(), stops(uris(keys))])
-    .then(d => {
+  stopKeys()
+  .then(d => d.json())
+  .then(keys => {
+    Promise.all([stopsPerLine(), stops(uris(R.keys(keys)))])
+      .then(d => {
         getStops(JSON.parse(d[1]))
         getRoutes(JSON.parse(d[1]), JSON.parse(d[0]))
-    })
-    .catch(e => console.log(e))
+      })
+      .catch(e => console.log(e))
+  })
+  .catch(e => console.log(e))
 }
 
 main();
