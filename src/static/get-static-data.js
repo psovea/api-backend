@@ -1,19 +1,14 @@
 /*
- * Ccombines all seperate features of acquiring the two datasets
- * (routes and stops) in JSON.
- *
- *  TO DO:
- * - get timepoint_keys.json directly from API
- * - create script that runs this code periodically
- * - create modules to clean up this code
- * - create POST request to send data to database
+ * Combines all seperate features of acquiring the two datasets
+ * (routes and stops) in JSON which are then sent to the database.
  */
 
 const fs = require('fs')
 const fetch = require('node-fetch')
 const R = require('ramda')
 
-var stopKeys = () => {
+
+var getStopIDs = () => {
   return fetch("https://v0.ovapi.nl/tpc/")
 }
 
@@ -36,7 +31,7 @@ var uris = keys => R.compose(
 /* Get all stop information. */
 var stops = (uri) => {
   return Promise.all(R.map(requestStop, uri))
-    .then(R.compose(JSON.stringify, R.mergeAll))
+    .then(R.mergeAll)
 }
 
 /* Get all stops per line. */
@@ -45,11 +40,13 @@ var stopsPerLine = () => {
     .then(data => data.json())
     /* We only need the first and the third id from the key. */
     .then(R.compose(
+      JSON.parse,
       R.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, "$1_$2"),
       R.toString)
     )
 }
 
+/* Retrieve information about all lines. */
 var getRoutes = (timeStops, dataLines) => {
   var routes = {}
   var keys = R.keys(timeStops)
@@ -59,6 +56,7 @@ var getRoutes = (timeStops, dataLines) => {
     var passes = R.keys(e["Passes"]);
 
     passes.forEach(p => {
+      /* Extract all needed information. */
       var obj = e["Passes"][p];
       var operatorCode = obj["OperatorCode"];
       var lineCode = obj["LinePlanningNumber"];
@@ -72,10 +70,12 @@ var getRoutes = (timeStops, dataLines) => {
       var lineName = obj["LineName"];
       var publicName = obj["LinePublicNumber"];
 
+      /* Check if this operator code has already been added to the object. */
       if (!routes[operatorCode]) {
           routes[operatorCode] = {}
       }
 
+      /* Check if this line code has already been added to the object. */
       if (!routes[operatorCode][lineCode]) {
           routes[operatorCode][lineCode] = {
               "lineName" : lineName,
@@ -93,13 +93,17 @@ var getRoutes = (timeStops, dataLines) => {
           orderNumber: orderNumber
       })
 
-      routes[operatorCode][lineCode]["stops"] = R.uniq(routes[operatorCode][lineCode]["stops"]);
+      /* Make sure that all stops are unique. */
+      routes[operatorCode][lineCode]["stops"] = R.uniq(
+        routes[operatorCode][lineCode]["stops"]
+      )
     })
   })
 
   fs.writeFileSync("data/route_data1.json", JSON.stringify(routes))
 }
 
+/* Create stop object, which contains information such as lat, lon and name. */
 var getStops = (timeStops) => {
     var keys = Object.keys(timeStops)
     var stops = keys.map(key => {
@@ -124,13 +128,17 @@ var getStops = (timeStops) => {
 }
 
 var main = () => {
-  stopKeys()
+  /* Retrieve the id's for all stops and retrieve information regarding them.
+   * */
+  getStopIDs()
   .then(d => d.json())
   .then(keys => {
     Promise.all([stopsPerLine(), stops(uris(R.keys(keys)))])
       .then(d => {
-        getStops(JSON.parse(d[1]))
-        getRoutes(JSON.parse(d[1]), JSON.parse(d[0]))
+        var timeStops = d[1]
+        var dataLines = d[0]
+        getStops(timeStops)
+        getRoutes(timeStops, dataLines)
       })
       .catch(e => console.log(e))
   })
