@@ -1,11 +1,11 @@
 /*
- * Get the neccessary information for every stop in Amsterdam.
+ * NIET MEER NODIG
  */
 
 const fs = require('fs');
 
 var main = () => {
-  amsterdam_timestops = JSON.parse(fs.readFileSync('data/amsterdam_data.json'));
+  amsterdam_timestops = JSON.parse(fs.readFileSync('data/timepoint_data.json'));
   stops = [];
 
   amsterdam_timestops.forEach(stop => {
@@ -14,6 +14,8 @@ var main = () => {
         lat: stop.Stop.Latitude,
         lon: stop.Stop.Longitude,
         name: stop.Stop.TimingPointName,
+        town: stop.Stop.TimingPointTown,
+        areaCode: stop.Stop.StopAreaCode,
         accessibility: {
           wheelchair: ('ACCESSIBLE') ? true : false,
           visual: ('ACCESSIBLE') ? true : false

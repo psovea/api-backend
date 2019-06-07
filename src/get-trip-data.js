@@ -1,12 +1,5 @@
 /*
- * Creates a JSON object of all the different routes (trajecten) per operator.
- * Each route consists of a transporttype, total number of stops, and an
- * array of the stops which consists of a stopcode (haltenummer) and the
- * order of the stop on the route.
- * This data is collected from a static file of (real-time) data and should
- * therefore be periodically completed with missing data.
- * To check if the route is complete we should compare the stops[] length
- * with the totalStops value.
+ * STAAT NU IN get-static-data.js
  */
 
 const fs = require('fs');

@@ -1,7 +1,5 @@
 /*
- * Filter all timestops in Amsterdam in order and write to a .json file.
- * This file then can be used to find all the stops in Amsterdam as well as
- * to find all trips (including in-between stops).
+ * NIET MEER NODIG
  */
 
 const fs = require('fs');
