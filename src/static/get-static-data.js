@@ -7,6 +7,8 @@ const fs = require('fs')
 const fetch = require('node-fetch')
 const R = require('ramda')
 
+const HOUR = 100 * 60 * 60
+
 var getStopIDs = () => {
   return fetch('https://v0.ovapi.nl/tpc/')
 }
@@ -100,6 +102,7 @@ var getRoutes = (timeStops, dataLines) => {
   })
 
   fs.writeFileSync('data/route_data1.json', JSON.stringify(routes))
+  console.log('succesfully written route data.')
 }
 
 /* Create stop object, which contains information such as lat, lon and name. */
@@ -124,9 +127,10 @@ var getStops = (timeStops) => {
   })
 
   fs.writeFileSync('data/all_stops.json', JSON.stringify(stops))
+  console.log('succesfully written all stops.')
 }
 
-var main = () => {
+var post = () => {
   /* Retrieve the id's for all stops and retrieve information regarding them.
    * */
   getStopIDs()
@@ -134,14 +138,18 @@ var main = () => {
     .then(keys => {
       Promise.all([stopsPerLine(), stops(uris(R.keys(keys)))])
         .then(d => {
-          var timeStops = d[1]
           var dataLines = d[0]
+          var timeStops = d[1]
           getStops(timeStops)
           getRoutes(timeStops, dataLines)
         })
         .catch(e => console.log(e))
     })
     .catch(e => console.log(e))
+}
+
+var main = () => {
+  setInterval(post, HOUR)
 }
 
 main()
