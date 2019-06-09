@@ -10,7 +10,7 @@ var fs = require('fs')
 
 var router = (app) => {
   app.get('/getStops', (req, res) => {
-    var stopData = JSON.parse(fs.readFileSync('../data/amsterdam_stops.json'))
+    var stopData = JSON.parse(fs.readFileSync('./data/amsterdam_stops.json'))
 
     res.status(200).send(stopData)
   })

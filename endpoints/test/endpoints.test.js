@@ -28,7 +28,7 @@ describe('STATIC DATA', () => {
       .expect(200)
       .end((err, res) => {
         res.status.should.equal(200)
-        res.body.should.eql(JSON.parse(fs.readFileSync('../data/amsterdam_stops.json')))
+        res.body.should.eql(JSON.parse(fs.readFileSync('./data/amsterdam_stops.json')))
         done()
       })
   })
