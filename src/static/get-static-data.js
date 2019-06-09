@@ -6,6 +6,7 @@
 const fs = require('fs')
 const fetch = require('node-fetch')
 const R = require('ramda')
+const request = require('request')
 
 const HOUR = 100 * 60 * 60
 
@@ -45,6 +46,28 @@ var stopsPerLine = () => {
       R.replace(/([A-Z]+)_\d+_([A-Za-z0-9]+)_\d+_\d+/g, '$1_$2'),
       R.toString)
     )
+}
+
+/* Generate options for post request. */
+var options = (endpoint, data) => {
+  return {
+    uri: 'http://18.216.203.6:5000' + endpoint,
+    method: 'POST',
+    json: data
+  }
+}
+
+/* Send post request to prometheus db. */
+var postReq = (endpoint, data) => {
+  request(options(endpoint, data), JSON.stringify(data),
+    (error, res, body) => {
+      if (error) {
+        console.error(error)
+        return
+      }
+      console.log(`statusCode: ${res.statusCode}`)
+      console.log(body)
+    })
 }
 
 /* Retrieve information about all lines. */
@@ -101,7 +124,7 @@ var getRoutes = (timeStops, dataLines) => {
     })
   })
 
-  fs.writeFileSync('data/route_data1.json', JSON.stringify(routes))
+  postReq('/insert-static', routes)
   console.log('succesfully written route data.')
 }
 
@@ -126,7 +149,8 @@ var getStops = (timeStops) => {
     }
   })
 
-  fs.writeFileSync('data/all_stops.json', JSON.stringify(stops))
+  postReq('/insert-static-stops', R.mergeAll(stops))
+
   console.log('succesfully written all stops.')
 }
 
@@ -149,7 +173,7 @@ var post = () => {
 }
 
 var main = () => {
-  setInterval(post, HOUR)
+  post()
 }
 
 main()
