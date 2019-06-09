@@ -46,5 +46,5 @@ dataAms.forEach(e => {
   })
 })
 
-fs.writeFileSync("data/route_data.json", JSON.stringify(glob))
-console.log(JSON.stringify(glob));
+fs.writeFileSync('data/route_data.json', JSON.stringify(glob))
+console.log(JSON.stringify(glob))
