@@ -33,7 +33,7 @@ deploy:
       application: psovea
       deployment_group: psovea-group
       region: eu-central-1
-      on: *2
+      on:
         branch: issue/27-continuous-deployment
 
 script:
