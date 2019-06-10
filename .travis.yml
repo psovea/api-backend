@@ -21,6 +21,7 @@ deploy:
       skip_cleanup: true
       on: &2
         repo: psovea/api-backend
+        branch: issue/27-continuous-deployment
       bucket: psovea
       region: eu-central-1
     - provider: codedeploy
@@ -33,6 +34,7 @@ deploy:
       deployment_group: psovea-group
       region: eu-central-1
       on: *2
+        branch: issue/27-continuous-deployment
 
 script:
     - zip -r latest *
