@@ -20,11 +20,11 @@ Running the API locally can be done by simply running the following command:
 npm start-server
 ```
 
-This will start a server that listens to port `3000`. An easy way to test whether it performs as it should, is to install [postman](https://www.getpostman.com/downloads/).
+This will start a server that listens to port `3000`. An easy way to do requests is to install [postman](https://www.getpostman.com/downloads/).
 
 ### Starting the deamon for extracting static data
 
-We use `node-cron` for our deamon, as we want to run a script that inserts data into our database every hour. To start it, simply run `npm start-static-daemon`.
+We use `node-cron` for our deamon, as we want to run a script that inserts data into our database every hour. To start it, simply run `npm start-static-daemon`. This will start the cron job.
 
 ## Contributing
 
