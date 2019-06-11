@@ -99,9 +99,12 @@ var getRoutes = (timeStops, dataLines) => {
         routes[operatorCode] = {}
       }
 
+      var lineIdentifier = lineCode + '/' + direction
+
       /* Check if this line code has already been added to the object. */
-      if (!routes[operatorCode][lineCode]) {
-        routes[operatorCode][lineCode] = {
+      if (!routes[operatorCode][lineIdentifier]) {
+        routes[operatorCode][lineIdentifier] = {
+          'lineCode': lineCode,
           'lineName': lineName,
           'destinationName': destName,
           'direction': direction,
@@ -112,14 +115,14 @@ var getRoutes = (timeStops, dataLines) => {
         }
       }
 
-      routes[operatorCode][lineCode]['stops'].push({
+      routes[operatorCode][lineIdentifier]['stops'].push({
         stopCode: stopCode,
         orderNumber: orderNumber
       })
 
       /* Make sure that all stops are unique. */
-      routes[operatorCode][lineCode]['stops'] = R.uniq(
-        routes[operatorCode][lineCode]['stops']
+      routes[operatorCode][lineIdentifier]['stops'] = R.uniq(
+        routes[operatorCode][lineIdentifier]['stops']
       )
     })
   })
@@ -142,8 +145,8 @@ var getStops = (timeStops) => {
         town: stop.Stop.TimingPointTown,
         areaCode: stop.Stop.StopAreaCode,
         accessibility: {
-          wheelchair: !!('ACCESSIBLE'),
-          visual: !!('ACCESSIBLE')
+          wheelchair: stop.Stop.TimingPointWheelChairAccessible === 'ACCESSIBLE',
+          visual: stop.Stop.TimingPointVisualAccessible === 'ACCESSIBLE'
         }
       }
     }
