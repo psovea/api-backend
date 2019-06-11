@@ -8,6 +8,42 @@ var endpoint = 'tcp://pubsub.besteffort.ndovloket.nl:7658'
 
 const LINE_NUMBER = '22'
 const TYPE = 'ARRIVAL'
+const EXPIRY_TIME = 1800
+
+var prevVehicleInfo = {}
+var stationPunctualityCounter = {}
+
+// update the stop punctuality delay counter using the new arrival data;
+// calculates the increase in delay between last stop and current stop,
+// and adds that difference to a specific counter.
+var updateStopPunctuality = (retobj) => {
+  var time = Date.now()
+
+  if (retobj['vehiclenumber'] in prevVehicleInfo &&
+    prevVehicleInfo[retobj['vehiclenumber']]['time'] + EXPIRY_TIME < time &&
+    retobj['punctuality'] - prevVehicleInfo[retobj['vehiclenumber']]['prev_punc'] > 0) {
+    var beginStop = prevVehicleInfo[retobj['vehiclenumber']]['prev_stop']
+    var endStop = retobj['userstopcode']
+    var prev = 0
+    if (beginStop in stationPunctualityCounter &&
+      stationPunctualityCounter.hasOwnProperty(beginStop) &&
+      endStop in stationPunctualityCounter[beginStop] &&
+      stationPunctualityCounter.hasOwnProperty(endStop)) {
+      prev = stationPunctualityCounter[beginStop][endStop]
+    }
+    if (stationPunctualityCounter[beginStop] === undefined) {
+      stationPunctualityCounter[beginStop] = {}
+    }
+    stationPunctualityCounter[beginStop][endStop] = (
+      prev + parseInt(retobj['punctuality']) - prevVehicleInfo[retobj['vehiclenumber']]['prev_punc'])
+  }
+
+  prevVehicleInfo[retobj['vehiclenumber']] = {
+    'time': time,
+    'prev_stop': retobj['userstopcode'],
+    'prev_punc': parseInt(retobj['punctuality'])
+  }
+}
 
 /* Create punctuality metric for given object. */
 var createMetric = (obj) => {
@@ -15,7 +51,11 @@ var createMetric = (obj) => {
 
   var retobj = obj[TYPE]
 
-  return {
+  updateStopPunctuality(retobj)
+
+  var metrics = []
+
+  metrics.push({
     'metrics': {
       'punctuality': retobj['punctuality']
     },
@@ -25,7 +65,8 @@ var createMetric = (obj) => {
       'line_number': retobj['lineplanningnumber'],
       'vehicle_number': retobj['vehiclenumber']
     }
-  }
+  })
+  return metrics
 }
 
 /* Check if object is a list. */
@@ -53,18 +94,38 @@ var parseMessage = (message) => {
     return []
   }
 
+  var newMetrics = []
+
   if (isList(posInfo)) {
-    return posInfo.filter(filterArrivals(TYPE, LINE_NUMBER)).map(createMetric).filter(x => x != null)
+    var metrics = posInfo.filter(filterArrivals(TYPE, LINE_NUMBER)).map(createMetric).filter(x => x != null)
+    for (var i = 0; i < metrics.length; i++) {
+      newMetrics = newMetrics.concat(metrics[i])
+    }
   } else {
     var ret = filterArrivals(TYPE, LINE_NUMBER) ? createMetric(posInfo) : null
-    return ret ? [ret] : []
+    newMetrics = ret || []
   }
+  for (var begin in stationPunctualityCounter) {
+    for (var end in stationPunctualityCounter[begin]) {
+      newMetrics.push({
+        'metrics': {
+          'location_punctuality': stationPunctualityCounter[begin][end]
+        },
+        'meta': {
+          'stop_begin': begin,
+          'stop_end': end
+        }
+      })
+    }
+  }
+  return newMetrics
 }
 
 /* Generate options for post request. */
 var options = data => {
   return {
     uri: 'http://18.216.203.6:5000/insert-metrics',
+    // uri: 'http://localhost:5000',
     method: 'POST',
     json: data
   }
