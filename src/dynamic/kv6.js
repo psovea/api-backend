@@ -33,7 +33,6 @@ var updateStopPunctuality = (retobj) => {
   var time = Date.now()
 
   var actualStopCode = getStopCode(retobj)
-
   if (retobj['vehiclenumber'] in prevVehicleInfo &&
     prevVehicleInfo[retobj['vehiclenumber']]['time'] + EXPIRY_TIME < time &&
     retobj['punctuality'] - prevVehicleInfo[retobj['vehiclenumber']]['prev_punc'] > 0) {
