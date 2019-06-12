@@ -31,14 +31,14 @@ var getStopCode = (retobj) => {
 var vehicleTypeURL = (line, operator) =>
   `http://18.216.203.6:5000/get-lines?public_id=${line}&operator=${operator}`
 
-var districtURL = (stop_code) =>
-  `http://18.216.203.6:5000/get-stops?stop_code=${stop_code}`
+var districtURL = (stopCode) =>
+  `http://18.216.203.6:5000/get-stops?stop_code=${stopCode}`
 
 var getReq = (url) => {
-  console.log("does request...")
+  console.log('does request...')
   return fetch(url)
     .then(data => data.json())
-    .catch(e => console.log("error :" + e))
+    .catch(e => console.log('error :' + e))
 }
 
 // update the stop punctuality delay counter using the new arrival data;
@@ -114,7 +114,7 @@ var filterArrivals = (type, lineNum) => (obj) => {
 }
 
 /* Parse an incoming message from the openov stream. */
-var parseMessage = (message, callback) => {
+var parseMessage = (message, operator, callback) => {
   var posInfo = null
 
   try {
@@ -140,9 +140,10 @@ var parseMessage = (message, callback) => {
     let typeProm = getReq(vehicleTypeURL(LINE_NUMBER, OPERATOR))
     let districtProm = getReq(districtURL(begin))
 
+    /* Retrieve distric and transport type from the database. */
     Promise.all([typeProm, districtProm]).then(data => {
-      let type = data[0]['transport_type']
-      let district = data[1]['district']
+      let type = data[0][0]['transport_type']
+      let district = data[1][0]['district']
 
       for (var end in stationPunctualityCounter[begin]) {
         newMetrics.push({
@@ -153,7 +154,8 @@ var parseMessage = (message, callback) => {
             'stop_begin': begin,
             'stop_end': end,
             'transport_type': type,
-            'district': district
+            'district': district,
+            'operator': operator
           }
         })
       }
@@ -198,10 +200,10 @@ socket.on('message', (topic, msg) => {
     var xmlString = buffer.toString()
     var json = xmlParser.toJson(xmlString)
 
-    parseMessage(json, (mes) => {
+    parseMessage(json, OPERATOR, (mes) => {
       if (mes && mes.length >= 1) {
         console.log(mes)
-//        postReq(mes)
+        postReq(mes)
       }
     })
   })
