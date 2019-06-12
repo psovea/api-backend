@@ -2,19 +2,21 @@ const xmlParser = require('xml2json')
 const zlib = require('zlib')
 const zmq = require('zeromq')
 const request = require('request')
+const fetch = require('node-fetch')
 
 var socket = zmq.socket('sub')
 var endpoint = 'tcp://pubsub.besteffort.ndovloket.nl:7658'
 
 const LINE_NUMBER = '22'
 const TYPE = 'ARRIVAL'
+const OPERATOR = 'GVB'
 const EXPIRY_TIME = 1800
 
 var prevVehicleInfo = {}
 var stationPunctualityCounter = {}
 
 // Get the actual the stop code used in the static database;
-// The stopcodes in the database seem to embed the dataownercode into the stopcode 
+// The stopcodes in the database seem to embed the dataownercode into the stopcode
 var getStopCode = (retobj) => {
   var prefix = ''
 
@@ -24,6 +26,19 @@ var getStopCode = (retobj) => {
       break
   }
   return prefix + retobj['userstopcode']
+}
+
+var vehicleTypeURL = (line, operator) =>
+  `http://18.216.203.6:5000/get-lines?public_id=${line}&operator=${operator}`
+
+var districtURL = (stopCode) =>
+  `http://18.216.203.6:5000/get-stops?stop_code=${stopCode}`
+
+var getReq = (url) => {
+  console.log('does request...')
+  return fetch(url)
+    .then(data => data.json())
+    .catch(e => console.log('error :' + e))
 }
 
 // update the stop punctuality delay counter using the new arrival data;
@@ -99,7 +114,7 @@ var filterArrivals = (type, lineNum) => (obj) => {
 }
 
 /* Parse an incoming message from the openov stream. */
-var parseMessage = (message) => {
+var parseMessage = (message, operator, callback) => {
   var posInfo = null
 
   try {
@@ -119,20 +134,35 @@ var parseMessage = (message) => {
     var ret = filterArrivals(TYPE, LINE_NUMBER) ? createMetric(posInfo) : null
     newMetrics = ret || []
   }
+
   for (var begin in stationPunctualityCounter) {
-    for (var end in stationPunctualityCounter[begin]) {
-      newMetrics.push({
-        'metrics': {
-          'location_punctuality': stationPunctualityCounter[begin][end]
-        },
-        'meta': {
-          'stop_begin': begin,
-          'stop_end': end
-        }
-      })
-    }
+    console.log('begin: ' + begin)
+    let typeProm = getReq(vehicleTypeURL(LINE_NUMBER, OPERATOR))
+    let districtProm = getReq(districtURL(begin))
+
+    /* Retrieve distric and transport type from the database. */
+    Promise.all([typeProm, districtProm]).then(data => {
+      let type = data[0][0]['transport_type']
+      let district = data[1][0]['district']
+
+      for (var end in stationPunctualityCounter[begin]) {
+        newMetrics.push({
+          'metrics': {
+            'location_punctuality': stationPunctualityCounter[begin][end]
+          },
+          'meta': {
+            'stop_begin': begin,
+            'stop_end': end,
+            'transport_type': type,
+            'district': district,
+            'operator': operator
+          }
+        })
+      }
+
+      callback(newMetrics)
+    })
   }
-  return newMetrics
 }
 
 /* Generate options for post request. */
@@ -166,15 +196,16 @@ socket.on('message', (topic, msg) => {
       return
     }
 
-    /* Convert the retrieved XML to JSON. */
+    // Convert the retrieved XML to JSON.
     var xmlString = buffer.toString()
     var json = xmlParser.toJson(xmlString)
-    var mes = parseMessage(json)
 
-    if (mes && mes.length >= 1) {
-      console.log(mes)
-      postReq(mes)
-    }
+    parseMessage(json, OPERATOR, (mes) => {
+      if (mes && mes.length >= 1) {
+        console.log(mes)
+        postReq(mes)
+      }
+    })
   })
 })
 
