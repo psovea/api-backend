@@ -7,4 +7,4 @@ var router = (app) => {
   })
 }
 
-module.export = router
+module.exports = router
