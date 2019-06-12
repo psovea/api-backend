@@ -13,17 +13,31 @@ const EXPIRY_TIME = 1800
 var prevVehicleInfo = {}
 var stationPunctualityCounter = {}
 
+// Get the actual the stop code used in the static database;
+// The stopcodes in the database seem to embed the dataownercode into the stopcode 
+var getStopCode = (retobj) => {
+  var prefix = ''
+
+  switch (retobj['dataownercode']) {
+    case 'GVB':
+      prefix = '300'
+      break
+  }
+  return prefix + retobj['userstopcode']
+}
+
 // update the stop punctuality delay counter using the new arrival data;
 // calculates the increase in delay between last stop and current stop,
 // and adds that difference to a specific counter.
 var updateStopPunctuality = (retobj) => {
   var time = Date.now()
 
+  var actualStopCode = getStopCode(retobj)
   if (retobj['vehiclenumber'] in prevVehicleInfo &&
     prevVehicleInfo[retobj['vehiclenumber']]['time'] + EXPIRY_TIME < time &&
     retobj['punctuality'] - prevVehicleInfo[retobj['vehiclenumber']]['prev_punc'] > 0) {
     var beginStop = prevVehicleInfo[retobj['vehiclenumber']]['prev_stop']
-    var endStop = retobj['userstopcode']
+    var endStop = actualStopCode
     var prev = 0
     if (beginStop in stationPunctualityCounter &&
       stationPunctualityCounter.hasOwnProperty(beginStop) &&
@@ -40,7 +54,7 @@ var updateStopPunctuality = (retobj) => {
 
   prevVehicleInfo[retobj['vehiclenumber']] = {
     'time': time,
-    'prev_stop': retobj['userstopcode'],
+    'prev_stop': actualStopCode,
     'prev_punc': parseInt(retobj['punctuality'])
   }
 }
