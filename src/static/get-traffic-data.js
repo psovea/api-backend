@@ -23,7 +23,7 @@ var post = () => {
     .then(data  => {
 
       /* First target all clusters from API data. */
-      const isCluster = incident => R.prop("id", incident).includes("CLUSTER")
+      const isCluster = incident => R.test(/CLUSTER/, R.prop("id", incident))
       let clusters = R.filter(isCluster, data)
 
       /* Now extract all incidents from the cluster and extract all single
