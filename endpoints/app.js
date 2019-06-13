@@ -4,6 +4,7 @@ var bodyParser = require('body-parser')
 var index = require('./routes/index')
 var getStops = require('./routes/get-stops')
 var districts = require('./routes/districts')
+var traffic = require('./traffic/get-traffic-incidents')
 
 var app = express()
 
@@ -15,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 index(app)
 getStops(app)
 districts(app)
+traffic(app)
 
 /* Listen on port 3000 */
 var server = app.listen(3000, () => {
