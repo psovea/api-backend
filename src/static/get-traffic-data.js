@@ -18,27 +18,24 @@ var getTrafficData = () => {
 }
 
 var post = () => {
-  getTrafficData()
+  return getTrafficData()
     .then(d => d['tm']['poi'])
     .then(data  => {
 
       /* First target all clusters from API data. */
       const isCluster = incident => R.prop("id", incident).includes("CLUSTER")
-      let clusters = R.takeWhile(isCluster, data)
+      let clusters = R.filter(isCluster, data)
 
       /* Now extract all incidents from the cluster and extract all single
        * incidents. */
       let incidents_from_cluster = R.flatten(R.map(R.prop('cpoi'), clusters))
       let single_incidents = R.dropWhile(isCluster, data)
 
-      let data = [...single_incidents, ...incidents_from_cluster]
-      console.log(data)
+      return [...single_incidents, ...incidents_from_cluster] 
     })
     .catch(e => console.log(e))
 }
 
-var main = () => {
-  post()
+module.exports = {
+  post: post
 }
-
-main()
