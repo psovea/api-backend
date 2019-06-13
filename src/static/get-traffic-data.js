@@ -3,7 +3,10 @@ const R = require('ramda')
 
 /* This is in min lat, min lon, max lat, max lon format. */
 const bounding = '52.290331,4.738163,52.462449,5.135141'
-const key = 'OUxx6J2lpUlbEuZ7sBfzhvPKUAKFbJ0F'
+
+/* Create a .env file in the root of this repo in the following
+ * format: TOMTOM_KEY=KEY */
+const key = require('dotenv').config().parsed.TOMTOM_KEY
 
 /* Requests all current incidents for a bounding box defined above. */
 var getTrafficData = () => {
@@ -28,7 +31,7 @@ var post = () => {
       let incidents_from_cluster = R.flatten(R.map(R.prop('cpoi'), clusters))
       let single_incidents = R.dropWhile(isCluster, data)
 
-      var data = [...single_incidents, ...incidents_from_cluster]
+      let data = [...single_incidents, ...incidents_from_cluster]
       console.log(data)
     })
     .catch(e => console.log(e))
