@@ -30,13 +30,15 @@ var filterDelaysFor = (type, message) => {
 
   let path = [type, 'punctuality']
 
+  let hasPunctuality = R.hasPath(path)
+
   let isDelayed = R.compose(
     R.gt(R.__, MIN_DELAY),
     parseInt,
     R.path(path)
   )
 
-  return R.filter(R.both(R.hasPath(path), isDelayed), posInfo)
+  return R.filter(R.both(hasPunctuality, isDelayed), posInfo)
 }
 
 io.on('connection', s => {
