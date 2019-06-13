@@ -7,7 +7,7 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const path = require('path')
 
-const MIN_DELAY = 600
+const MIN_DELAY = 180
 
 var socket = zmq.socket('sub')
 var endpoint = 'tcp://pubsub.besteffort.ndovloket.nl:7658'
