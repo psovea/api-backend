@@ -7,7 +7,7 @@ const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 const path = require('path')
 
-const MIN_DELAY = 60
+const MIN_DELAY = 600
 
 var socket = zmq.socket('sub')
 var endpoint = 'tcp://pubsub.besteffort.ndovloket.nl:7658'
@@ -42,7 +42,9 @@ var filterDelaysFor = (type, message) => {
     R.path(path)
   )
 
-  return R.filter(R.both(hasPunctuality, isDelayed), posInfo)
+  return R.tryCatch(
+    R.filter(R.both(hasPunctuality, isDelayed)),
+    R.always([]))(posInfo)
 }
 
 io.on('connection', s => {
@@ -64,7 +66,9 @@ io.on('connection', s => {
 
       if (R.not(R.isEmpty(delays))) {
         console.log(delays)
-        s.emit('message', JSON.stringify(delays))
+        R.forEach((delay) => {
+          s.emit('message', JSON.stringify(delay))
+        }, delays)
       }
     })
   })
