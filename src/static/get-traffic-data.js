@@ -29,9 +29,9 @@ var post = () => {
       /* Now extract all incidents from the cluster and extract all single
        * incidents. */
       let incidents_from_cluster = R.flatten(R.map(R.prop('cpoi'), clusters))
-      let single_incidents = R.dropWhile(isCluster, data)
+      let single_incidents = R.reject(isCluster, data)
 
-      return [...single_incidents, ...incidents_from_cluster] 
+      return [...single_incidents, ...incidents_from_cluster]
     })
     .catch(e => console.log(e))
 }
