@@ -12,7 +12,7 @@ git clone git@github.com:psovea/api-backend.git
 npm i
 ```
 
-### Starting the API (endpoints for the front end)
+### Starting the API (endpoints for the front end) (**DEPRECATED**)
 
 Running the API locally can be done by simply running the following command:
 
