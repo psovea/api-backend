@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/.bin/standard",
-    "socket": "node socket/index.js"
+    "socket": "node socket/index.js",
+    "static": "node src/static/get-static-data.js",
+    "start": "(cd api && node app.js)"
   },
   "repository": {
     "type": "git",

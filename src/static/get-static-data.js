@@ -3,12 +3,9 @@
  * (routes and stops) in JSON which are then sent to the database.
  */
 
-const fs = require('fs')
 const fetch = require('node-fetch')
 const R = require('ramda')
 const request = require('request')
-
-const HOUR = 100 * 60 * 60
 
 var getStopIDs = () => {
   return fetch('https://v0.ovapi.nl/tpc/')
@@ -51,7 +48,7 @@ var stopsPerLine = () => {
 /* Generate options for post request. */
 var options = (endpoint, data) => {
   return {
-    uri: 'http://18.216.203.6:5000' + endpoint,
+    uri: 'http://18.224.29.151:5000' + endpoint,
     method: 'POST',
     json: data
   }
