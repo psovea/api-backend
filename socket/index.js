@@ -1,3 +1,8 @@
+/* server.js:
+ * Server side socket that the frontend can connect to to retrieve
+ * live information regarding incoming delays.
+ * */
+
 const xmlParser = require('xml2json')
 const zlib = require('zlib')
 const zmq = require('zeromq')
@@ -42,6 +47,9 @@ var filterDelaysFor = (type, message) => {
     R.path(path)
   )
 
+  /* Find all objects that are delayed and have a punctuality
+   * object.
+   * */
   return R.tryCatch(
     R.filter(R.both(hasPunctuality, isDelayed)),
     R.always([]))(posInfo)

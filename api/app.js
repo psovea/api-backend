@@ -2,7 +2,6 @@ var express = require('express')
 var bodyParser = require('body-parser')
 
 var index = require('./routes/index')
-var getStops = require('./routes/get-stops')
 var districts = require('./routes/districts')
 var traffic = require('./traffic/get-traffic-incidents')
 
@@ -14,7 +13,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 /* Add every end point */
 index(app)
-getStops(app)
 districts(app)
 traffic(app)
 

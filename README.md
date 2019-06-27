@@ -12,19 +12,29 @@ git clone git@github.com:psovea/api-backend.git
 npm i
 ```
 
-### Starting the API (endpoints for the front end)
+### Starting the API (endpoints for the front end) **DEPRECATED***
 
 Running the API locally can be done by simply running the following command:
 
 ```bash
-npm start-server
+npm start
 ```
 
 This will start a server that listens to port `3000`. An easy way to do requests is to install [postman](https://www.getpostman.com/downloads/).
 
 ### Starting the deamon for extracting static data
 
-We use `node-cron` for our deamon, as we want to run a script that inserts data into our database every hour. To start it, simply run `npm start-static-daemon`. This will start the cron job.
+This repository includes a script that retrieves the current state of the public transport in the Netherlands. To retrieve this data and store it in our static database, run the following command:
+
+```bash
+> npm run static
+```
+
+### Starting the socket for live data
+
+```bash
+> npm run socket
+```
 
 ## Contributing
 
@@ -37,8 +47,3 @@ We use the [standardjs](https://standardjs.com) coding style. The easiest way to
 
 To check if it passes the test, you can run `npm test`
 
-### Unit testing
-
-After adding a feature, it is required to add a unit test in `endpoints/test`, to make sure that it performs as expected.
-
-TODO, more about this later
