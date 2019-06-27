@@ -12,7 +12,7 @@ git clone git@github.com:psovea/api-backend.git
 npm i
 ```
 
-### Starting the API (endpoints for the front end) **DEPRECATED***
+### Starting the API (endpoints for the front end) **DEPRECATED**
 
 Running the API locally can be done by simply running the following command:
 
@@ -47,3 +47,6 @@ We use the [standardjs](https://standardjs.com) coding style. The easiest way to
 
 To check if it passes the test, you can run `npm test`
 
+## Documentation
+
+For some more information, please refer to the [wiki](https://github.com/psovea/api-backend/wiki)
