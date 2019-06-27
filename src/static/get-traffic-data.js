@@ -6,11 +6,11 @@ const bounding = '52.290331,4.738163,52.462449,5.135141'
 
 /* Create a .env file in the root of this repo in the following
  * format: TOMTOM_KEY=KEY */
-const key = require('dotenv').config().parsed.TOMTOM_KEY
+const apiKey = "OUxx6J2lpUlbEuZ7sBfzhvPKUAKFbJ0F"
 
 /* Requests all current incidents for a bounding box defined above. */
 var getTrafficData = () => {
-  const url = `https://api.tomtom.com/traffic/services/4/incidentDetails/s3/${bounding}/11/1335294634919/json?key=${key}&projection=EPSG4326&originalPosition=true&expandCluster=true`
+  const url = `https://api.tomtom.com/traffic/services/4/incidentDetails/s3/${bounding}/11/1335294634919/json?key=${apiKey}&projection=EPSG4326&originalPosition=true&expandCluster=true`
 
   return fetch(url)
     .then(d => d.json())
