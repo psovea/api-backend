@@ -1,4 +1,4 @@
-# PSOVEA API
+# OVerzicht API
 
 This repository contains the code for requesting static and dynamic data regarding public transportation in the Netherlands.
 
@@ -35,6 +35,8 @@ This repository includes a script that retrieves the current state of the public
 ```bash
 > npm run socket
 ```
+
+You can now connect to the socket on port 3500.
 
 ## Contributing
 
